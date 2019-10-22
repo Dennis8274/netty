@@ -756,7 +756,7 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     }
 
     @Override
-    public void execute(Runnable task) {
+    public void execute(Runnable task) {    // 启动parentEventLoop
         if (task == null) {
             throw new NullPointerException("task");
         }

@@ -26,7 +26,7 @@ final class SelectedSelectionKeySet extends AbstractSet<SelectionKey> {
     int size;
 
     SelectedSelectionKeySet() {
-        keys = new SelectionKey[1024];
+        keys = new SelectionKey[1024];  // select or poll 只允许1024个连接
     }
 
     @Override

@@ -172,12 +172,13 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
                 final ChannelPipeline pipeline = ch.pipeline();
                 ChannelHandler handler = config.handler();
                 if (handler != null) {
-                    pipeline.addLast(handler);
+                    pipeline.addLast(handler);  // parentHandler
                 }
 
                 ch.eventLoop().execute(new Runnable() {
                     @Override
                     public void run() {
+                        // main acceptor
                         pipeline.addLast(new ServerBootstrapAcceptor(
                                 ch, currentChildGroup, currentChildHandler, currentChildOptions, currentChildAttrs));
                     }
@@ -243,6 +244,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
             final Channel child = (Channel) msg;
 
+            // 加入pipeline 的handler链
             child.pipeline().addLast(childHandler);
 
             setChannelOptions(child, childOptions, logger);
@@ -252,6 +254,7 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
             }
 
             try {
+                // 在childGroup选取一个eventLoop注册
                 childGroup.register(child).addListener(new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {

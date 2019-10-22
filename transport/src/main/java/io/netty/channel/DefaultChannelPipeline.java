@@ -209,7 +209,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
             newCtx = newContext(group, filterName(name, handler), handler);
 
-            addLast0(newCtx);
+            addLast0(newCtx);   // 加入 pipeline 中的 conetxt 链
 
             // If the registered is false it means that the channel was not registered on an eventloop yet.
             // In this case we add the context to the pipeline and add a task that will call
@@ -232,10 +232,12 @@ public class DefaultChannelPipeline implements ChannelPipeline {
                 return this;
             }
         }
+        // ctx.handler.handlerAdded
         callHandlerAdded0(newCtx);
         return this;
     }
 
+    // pipeline有一个 context链
     private void addLast0(AbstractChannelHandlerContext newCtx) {
         AbstractChannelHandlerContext prev = tail.prev;
         newCtx.prev = prev;
@@ -634,6 +636,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             // We must call setAddComplete before calling handlerAdded. Otherwise if the handlerAdded method generates
             // any pipeline events ctx.handler() will miss them because the state will not allow it.
             ctx.setAddComplete();
+            // HandlerInitializer.initChannel()
             ctx.handler().handlerAdded(ctx);
         } catch (Throwable t) {
             boolean removed = false;

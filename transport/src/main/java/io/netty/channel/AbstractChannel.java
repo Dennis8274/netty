@@ -435,7 +435,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
         @Override
         public RecvByteBufAllocator.Handle recvBufAllocHandle() {
             if (recvHandle == null) {
-                recvHandle = config().getRecvByteBufAllocator().newHandle();
+                this.recvHandle = config().getRecvByteBufAllocator().newHandle();
             }
             return recvHandle;
         }
@@ -501,20 +501,23 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
+                // 底层channel注册
                 doRegister();
                 neverRegistered = false;
                 registered = true;
 
                 // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the
                 // user may already fire events through the pipeline in the ChannelFutureListener.
+                // 通知挂在pipeline上的所有handler，ChannelHandler.handlerAdded() , HandlerInitializer.initChannel()
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);
+                // 通知pipeline上的所有handler，ChannelInboundHandler.channelRegistered()
                 pipeline.fireChannelRegistered();
                 // Only fire a channelActive if the channel has never been registered. This prevents firing
                 // multiple channel actives if the channel is deregistered and re-registered.
                 if (isActive()) {
-                    if (firstRegistration) {
+                    if (firstRegistration) {    // 只有在channel第一次注册时才通知handler，ChannelInboundHandler.channelActive()
                         pipeline.fireChannelActive();
                     } else if (config().isAutoRead()) {
                         // This channel was registered before and autoRead() is set. This means we need to begin read
